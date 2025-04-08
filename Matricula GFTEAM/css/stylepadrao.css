@@ -1,0 +1,161 @@
+@keyframes fadeIn {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+  }
+
+  @keyframes slideUp {
+    0% { opacity: 0; transform: translateY(50px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+  html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  main {
+    flex: 1;
+  }
+ 
+ /*Consulta aluno*/ 
+.container-ConsultaAluno{
+  width: 1000px;
+  height: 600px;
+  padding: 0 30px;
+  margin: auto; /* Centraliza horizontalmente */
+  margin-top: 50px;
+  margin-bottom: 50px;
+  border-radius: 5px;
+  border: 2px solid #eeededcc;
+  justify-content: center;
+  align-items: center;
+  font-size: 20px;
+  background-color: rgb(247, 247, 247);
+}
+
+/*Cadastro aluno*/
+.modal {
+  display: none; /* Inicialmente oculto */
+  position: fixed; /* Fixa na tela */
+  z-index: 1; /* Sobrepor outros elementos */
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto; /* Permite rolagem se o conteúdo for muito grande */
+  background-color: rgba(0,0,0,0.4); /* Fundo escurecido */
+}
+
+.modal-content {
+  background-color: #fefefe;
+  margin: 10% auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 90%;
+  max-width: 400px;
+  border-radius: 8px;
+}
+
+
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.container-Cadastro {
+  padding: 0 30px;
+  margin: auto; /* Centraliza horizontalmente */
+  margin-top: 50px;
+  margin-bottom: 50px;
+  border-radius: 5px;
+  border: 2px solid #eeededcc;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-size: 20px;
+  background-color: rgb(247, 247, 247);
+}
+  
+/*menu*/
+.nav-tabs > li.active > a {
+    background-color: #007bff;  /* Cor de fundo da aba ativa */
+    color: rgb(0, 0, 0) !important;    /* Cor do texto da aba ativa */
+    border-radius: 5px 5px 0 0;
+  }
+  
+  .nav-tabs > li > a {
+    background-color: #000000;  /* Cor das abas não ativas */
+    color: #ffffff;
+  }
+
+/*tela principal*/
+.container-Principal{  
+  justify-content: center;
+  align-items: center;
+  padding: 0 30px;
+  margin: auto; /* Centraliza horizontalmente */
+  margin: 50px;
+  border-radius: 5px;
+  border: 2px solid #eeededcc;
+  font-size: 20px;
+  background-color: rgb(247, 247, 247);
+}  
+/*login*/
+.imagem-footer{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    animation: fadeIn 1.5s ease-in-out forwards;
+}
+
+.container {
+    background-color: #000000cc;
+    align-items: center;
+    padding-top: 50;
+    width: 300;
+    height: 250;
+    animation: slideUp 1.2s ease-out forwards;
+}
+
+.container input {
+    width: 250;
+    height: 40;
+    padding: 0 20px;
+    margin-bottom: 15px;
+    margin-left: 30;
+    border-radius: 5px;
+    border: 2px solid #eeededcc;
+}
+
+#formCadastro {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.form-senha {
+    display: flex;
+    justify-content: space-between;   
+}
+
+.botao {
+    background-color: #ffffff;
+    font-size: 19px;
+    width: 200px;
+    border-radius: 25px;
+    cursor: pointer;
+    margin-bottom: 10px;
+    align-items: center;
+}
