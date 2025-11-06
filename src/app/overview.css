@@ -1,0 +1,28 @@
+/* Estilos específicos para o overview */
+
+/* Animação suave para as métricas */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.bg-gradient-to-br {
+  animation: fadeInUp 0.5s ease-out;
+}
+
+/* Efeito de hover nos cards */
+.bg-gradient-to-br:hover {
+  transform: translateY(-4px);
+  transition: transform 0.3s ease;
+}
+
+/* Animação das barras do gráfico */
+.bg-amber-500, .bg-green-500 {
+  min-height: 4px;
+}

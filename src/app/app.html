@@ -1,168 +1,73 @@
-<!-- Container Principal -->
-<div class="bg-slate-100 min-h-screen font-sans text-slate-800">
-  <header class="bg-slate-800 text-white shadow-lg">
-    <div class="container mx-auto p-4 flex justify-between items-center">
-      <h1 class="text-2xl font-bold">Sistema de Chamados</h1>
-      <nav class="flex items-center gap-3">
-        <a routerLink="/" class="inline-block text-white/80 hover:text-white px-3 py-1.5 rounded text-sm transition-colors">
-          Home
-        </a>
-        <a routerLink="/clientes" class="inline-flex items-center gap-2 bg-amber-500 text-slate-900 font-semibold px-3 py-1.5 rounded hover:bg-amber-400 active:bg-amber-600 text-sm shadow-sm transition-colors">
-          <span class="inline-block w-2.5 h-2.5 rounded-full bg-slate-900/40"></span>
-          Cadastrar Cliente
-        </a>
+<!-- Dark dashboard layout: sidebar + main content -->
+<div class="min-h-screen flex bg-slate-900 text-slate-200">
+
+  <!-- Sidebar -->
+  <aside [class.w-64]="sidebarOpen" [class.w-14]="!sidebarOpen" class="transition-all duration-300 overflow-hidden bg-gradient-to-b from-slate-800 via-slate-900 to-black text-white flex flex-col">
+    <div class="flex items-center justify-between p-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-amber-400 rounded flex items-center justify-center text-slate-900 font-bold">BI</div>
+        <div *ngIf="sidebarOpen" class="text-lg font-semibold">CRM</div>
+      </div>
+      <button (click)="sidebarOpen = !sidebarOpen" class="p-1 rounded hover:bg-slate-700/40 focus:outline-none">
+        <span *ngIf="!sidebarOpen">☰</span>
+      </button>
+    </div>
+
+    <div class="px-4" *ngIf="sidebarOpen">
+      <!-- Componente Autocomplete -->
+      <div class="mb-4">
+        <app-cliente-autocomplete
+          [clientes]="clientes()"
+          [clienteInicial]="clienteSelecionadoId()"
+          [label]="''"
+          [placeholder]="'Buscar cliente...'"
+          [inputId]="'clienteSidebar'"
+          [required]="false"
+          (clienteSelecionado)="onClienteAutocompleteSelecionado($event)"
+        />
+      </div>
+
+      <nav class="space-y-1">
+        <a routerLink="/" routerLinkActive="bg-slate-700" class="flex items-center gap-3 px-3 py-2 rounded hover:bg-slate-700">🏠 <span *ngIf="sidebarOpen">Principal</span></a>
+        <a routerLink="/chamados" routerLinkActive="bg-slate-700" class="flex items-center gap-3 px-3 py-2 rounded hover:bg-slate-700">📝 <span *ngIf="sidebarOpen">Chamados</span></a>
+        <a routerLink="/clientes" routerLinkActive="bg-slate-700" class="flex items-center gap-3 px-3 py-2 rounded hover:bg-slate-700">👥 <span *ngIf="sidebarOpen">Clientes</span></a>
+        <a routerLink="/financeiro" routerLinkActive="bg-slate-700" class="flex items-center gap-3 px-3 py-2 rounded hover:bg-slate-700">💰 <span *ngIf="sidebarOpen">Financeiro</span></a>
+        <a routerLink="/contato-cliente" routerLinkActive="bg-slate-700" class="flex items-center gap-3 px-3 py-2 rounded hover:bg-slate-700">📞 <span *ngIf="sidebarOpen">Contato Cliente</span></a>
+        <a routerLink="/relatorios" routerLinkActive="bg-slate-700" class="flex items-center gap-3 px-3 py-2 rounded hover:bg-slate-700">📊 <span *ngIf="sidebarOpen">Relatórios</span></a>
       </nav>
     </div>
-  </header>
 
-  <router-outlet #o="outlet"></router-outlet>
-
-  @if (!o.isActivated) {
-  <main class="container mx-auto p-4 md:p-6">
-    <!-- Seção para Criar Novo Chamado -->
-    <div class="bg-white p-6 rounded-lg shadow-md mb-8">
-      <h2 class="text-xl font-semibold mb-4">Abrir Novo Chamado</h2>
-      <form (ngSubmit)="adicionarChamado($event)" class="space-y-4">
+    <div class="mt-auto p-4 border-t border-slate-800/50" *ngIf="sidebarOpen">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-full bg-slate-700 flex items-center justify-center">JS</div>
         <div>
-          <label for="cliente" class="block text-sm font-medium text-slate-600 mb-1">Cliente</label>
-          <select id="cliente" name="cliente"
-                  class="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500 bg-white"
-                  [(ngModel)]="selectedCliente">
-            <option value="">Selecione um cliente...</option>
-            <option *ngFor="let c of clients()" [value]="c.idcliente">
-              {{ c.razao }}<span *ngIf="c.fantasia"> - {{ c.fantasia }}</span>
-            </option>
-          </select>
-        </div>
-        <div>
-          <label for="titulo" class="block text-sm font-medium text-slate-600 mb-1">Título</label>
-          <input id="titulo" name="titulo" type="text" required class="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500" placeholder="Ex: Impressora não funciona">
-        </div>
-        <div>
-          <label for="descricao" class="block text-sm font-medium text-slate-600 mb-1">Descrição</label>
-          <textarea id="descricao" name="descricao" rows="3" required class="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500" placeholder="Descreva o problema em detalhes..."></textarea>
-        </div>
-        <div>
-          <label for="tipo" class="block text-sm font-medium text-slate-600 mb-1">Tipo de Chamado</label>
-          <select id="tipo" name="tipo" required class="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500 bg-white">
-            <option value="" disabled selected>Selecione o tipo...</option>
-            <option value="Dúvida">Dúvida</option>
-            <option value="Erro de Sistema">Erro de Sistema</option>
-            <option value="Solicitação de Melhoria">Solicitação de Melhoria</option>
-          </select>
-        </div>
-        <button type="submit" class="w-full sm:w-auto bg-sky-600 text-white font-semibold px-4 py-2 rounded-md hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 transition-colors">
-          Registrar Chamado
-        </button>
-      </form>
-    </div>
-
-    <!-- Seção de Filtros -->
-    <div class="bg-white p-6 rounded-lg shadow-md mb-8">
-       <h2 class="text-xl font-semibold mb-4">Filtrar Chamados</h2>
-       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label for="filtroCliente" class="block text-sm font-medium text-slate-600 mb-1">Filtrar por Cliente</label>
-            <input id="filtroCliente" name="filtroCliente" type="text"
-                   [ngModel]="filtroCliente()" (ngModelChange)="filtroCliente.set($event)"
-                   class="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500" placeholder="Digite o nome do cliente...">
-          </div>
-           <div>
-            <label for="filtroTipo" class="block text-sm font-medium text-slate-600 mb-1">Filtrar por Tipo</label>
-            <select id="filtroTipo" name="filtroTipo"
-                    [ngModel]="filtroTipo()" (ngModelChange)="filtroTipo.set($event)"
-                    class="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500 bg-white">
-              <option value="">Todos os Tipos</option>
-              <option value="Dúvida">Dúvida</option>
-              <option value="Erro de Sistema">Erro de Sistema</option>
-              <option value="Solicitação de Melhoria">Solicitação de Melhoria</option>
-            </select>
-          </div>
-       </div>
-    </div>
-
-    <!-- Seção de Listagem de Chamados -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-      <div>
-        <h2 class="text-xl font-semibold mb-4 text-amber-600">Chamados em Aberto</h2>
-        <div class="space-y-4">
-          @for (chamado of chamadosAbertos(); track chamado.idchamado) {
-            <div class="bg-white p-4 rounded-lg shadow-md border-l-4 border-amber-500">
-              <div class="flex justify-between items-start">
-                  <h3 class="font-bold text-lg">{{ chamado.titulo }}</h3>
-                  <span class="text-xs font-semibold text-slate-500 bg-slate-100 px-2 py-1 rounded">{{ chamado.tipo }}</span>
-              </div>
-              <p class="text-sm font-medium text-slate-700 mt-1">Cliente: {{ getClienteNome(chamado.idcliente) }}</p>
-              <p class="text-slate-600 mt-2">{{ chamado.descricao }}</p>
-              <div class="text-xs text-slate-400 mt-3">
-                Aberto em: {{ chamado.dataabertura.toLocaleString('pt-BR') }}
-              </div>
-              <button (click)="abrirModalSolucao(chamado)" class="mt-4 bg-green-600 text-white font-semibold px-3 py-1.5 rounded-md hover:bg-green-700 text-sm transition-colors">
-                Finalizar Chamado
-              </button>
-            </div>
-          } @empty {
-            <div class="bg-white p-4 rounded-lg shadow-sm text-center text-slate-500">
-              Nenhum chamado aberto encontrado.
-            </div>
-          }
-        </div>
-      </div>
-      <div>
-        <h2 class="text-xl font-semibold mb-4 text-green-600">Chamados Finalizados</h2>
-        <div class="space-y-4">
-          @for (chamado of chamadosFechados(); track chamado.idchamado) {
-            <div class="bg-white p-4 rounded-lg shadow-md border-l-4 border-green-500 opacity-80">
-              <div class="flex justify-between items-start">
-                <h3 class="font-bold text-lg text-slate-600">{{ chamado.titulo }}</h3>
-                <span class="text-xs font-semibold text-slate-500 bg-slate-100 px-2 py-1 rounded">{{ chamado.tipo }}</span>
-              </div>
-              <p class="text-sm font-medium text-slate-700 mt-1">Cliente: {{ getClienteNome(chamado.idcliente) }}</p>
-              <p class="text-slate-500 mt-2 text-sm italic">"{{ chamado.descricao }}"</p>
-              <div class="mt-3 p-3 bg-slate-50 rounded-md border border-slate-200">
-                <p class="text-sm font-semibold text-slate-700">Solução Aplicada:</p>
-                <p class="text-slate-600 text-sm mt-1">{{ chamado.solucao }}</p>
-              </div>
-              <div class="text-xs text-slate-400 mt-3">
-                 Finalizado em: {{ chamado.datafechamento?.toLocaleString('pt-BR') }}
-              </div>
-            </div>
-          } @empty {
-            <div class="bg-white p-4 rounded-lg shadow-sm text-center text-slate-500">
-              Nenhum chamado finalizado encontrado.
-            </div>
-          }
+          <div class="text-sm font-semibold">Usuário</div>
+          <div class="text-xs text-slate-400">suporte@empresa.com</div>
         </div>
       </div>
     </div>
-  </main>
+  </aside>
 
-  <!-- Modal para Registrar Solução -->
-  @if (chamadoSelecionado()) {
-    <div class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
-      <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-lg">
-        <h2 class="text-xl font-semibold mb-2">Finalizar Chamado</h2>
-        <p class="mb-4 text-slate-700">Registrando solução para: <strong class="font-medium">"{{ chamadoSelecionado()?.titulo }}"</strong></p>
-        <form (ngSubmit)="finalizarChamado()">
-          <div>
-            <label for="solucao" class="block text-sm font-medium text-slate-600 mb-1">Solução aplicada:</label>
-            <textarea id="solucao" name="solucao" rows="4" required [(ngModel)]="solucaoAtual"
-              class="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-              placeholder="Ex: Reinstalação do driver da impressora.">
-            </textarea>
-          </div>
-          <div class="mt-6 flex justify-end space-x-3">
-            <button type="button" (click)="cancelarFinalizacao()" class="bg-slate-200 text-slate-700 font-semibold px-4 py-2 rounded-md hover:bg-slate-300 transition-colors">
-              Cancelar
-            </button>
-            <button type="submit" class="bg-green-600 text-white font-semibold px-4 py-2 rounded-md hover:bg-green-700 transition-colors">
-              Confirmar Solução
-            </button>
-          </div>
-        </form>
+
+  <div class="flex-1 min-h-screen overflow-auto">
+    <header class="bg-transparent px-6 py-4 border-b border-slate-800/40">
+      <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
+        <div class="flex items-center gap-4">
+          <button (click)="sidebarOpen = !sidebarOpen" class="p-2 rounded hover:bg-slate-800/40 hidden md:inline">☰</button>
+          <div class="text-2xl font-semibold">Painel</div>
+        </div>
+
       </div>
-    </div>
-  }
-  }
+    </header>
+
+    <main class="py-8">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="grid grid-cols-1 gap-6">
+          <section class="bg-slate-800/60 rounded-lg p-6 shadow-md">
+            <router-outlet></router-outlet>
+          </section>
+        </div>
+      </div>
+    </main>
+  </div>
 </div>
-

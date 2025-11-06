@@ -181,6 +181,113 @@ export class ClientesService {
     }
   }
 
+  async updateCliente(
+    idcliente: number,
+    razao: string,
+    telefones: { celular: string; responsavel?: string; email?: string }[],
+    fantasia?: string,
+    cpcn?: number,
+    observacoes?: string
+  ): Promise<Cliente | null> {
+    if (!this.supabase) {
+      // fallback local
+      this.clientesState.update(lista => lista.map(c => {
+        if (c.idcliente === idcliente) {
+          return {
+            ...c,
+            razao: razao.trim(),
+            fantasia: (fantasia?.trim() || null) ?? null,
+            cpcn: typeof cpcn === 'number' ? cpcn : (cpcn ? Number(cpcn) : null),
+            observacoes: observacoes?.trim() || null,
+            clientes_telefone: telefones.map((t, index) => ({
+              idtelefone: c.clientes_telefone[index]?.idtelefone || (index + 1),
+              celular: (t.celular || '').trim() || null,
+              responsavel: (t.responsavel || '').trim() || null,
+              email: (t.email || '').trim() || null,
+              ativo: true
+            })).filter(t => t.celular || t.email)
+          };
+        }
+        return c;
+      }));
+      return this.clientesState().find(c => c.idcliente === idcliente) || null;
+    }
+
+    try {
+      // 1) Atualiza os dados do cliente
+      let updateResult: any;
+      try {
+        updateResult = await this.supabase
+          .from('clientes')
+          .update({
+            razao: razao.trim(),
+            fantasia: (fantasia?.trim() || null) ?? null,
+            cpcn: typeof cpcn === 'number' ? cpcn : (cpcn ? Number(cpcn) : null),
+            observacoes: observacoes?.trim() || null
+          })
+          .eq('idcliente', idcliente)
+          .select()
+          .single();
+      } catch (e) {
+        updateResult = { error: e };
+      }
+
+      // 2) Se der erro de coluna inexistente (observacoes), re-tenta sem observacoes
+      if (updateResult?.error) {
+        const err = updateResult.error;
+        const msg = (err?.message || '').toString();
+        if (msg.includes("Could not find the 'observacoes' column") || msg.includes('PGRST204')) {
+          const retry = await this.supabase
+            .from('clientes')
+            .update({
+              razao: razao.trim(),
+              fantasia: (fantasia?.trim() || null) ?? null,
+              cpcn: typeof cpcn === 'number' ? cpcn : (cpcn ? Number(cpcn) : null)
+            })
+            .eq('idcliente', idcliente)
+            .select()
+            .single();
+          if (retry.error) throw retry.error;
+          updateResult = retry;
+        } else {
+          throw err;
+        }
+      }
+
+      // 3) Remove telefones antigos
+      const { error: deleteErr } = await this.supabase
+        .from('clientes_telefone')
+        .delete()
+        .eq('idcliente', idcliente);
+      if (deleteErr) throw deleteErr;
+
+      // 4) Insere os novos telefones
+      const tels = (telefones || [])
+        .filter(t => (t.celular || '').trim() || (t.email || '').trim())
+        .map(t => ({
+          idcliente,
+          celular: (t.celular || '').trim() || null,
+          responsavel: (t.responsavel || '').trim() || null,
+          email: (t.email || '').trim() || null,
+          ativo: true
+        }));
+
+      if (tels.length) {
+        const { error: telErr } = await this.supabase
+          .from('clientes_telefone')
+          .insert(tels);
+        if (telErr) throw telErr;
+      }
+
+      // 5) Recarrega os dados do Supabase para ter certeza de que está atualizado
+      await this.loadClientesFromSupabase();
+      return this.clientesState().find(c => c.idcliente === idcliente) || null;
+    } catch (err) {
+      console.error('Falha ao atualizar cliente no Supabase.', err);
+      return null;
+    }
+  }
+
   async removeCliente(idcliente: number): Promise<void> {
     if (!this.supabase) {
       this.clientesState.update(c => c.filter(x => x.idcliente !== idcliente));

@@ -1,0 +1,6 @@
+/* Estilos específicos para o componente contato-cliente */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  cursor: pointer;
+}
+

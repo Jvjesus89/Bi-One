@@ -1,0 +1,191 @@
+<div class="p-6 max-w-7xl mx-auto font-sans">
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold text-slate-100">
+      @if (contatoSelecionado()) {
+        Editar Contato com Cliente
+      } @else {
+        Registrar Contato com Cliente
+      }
+    </h1>
+    @if (clienteSelecionado()) {
+      <div class="bg-amber-500/20 border border-amber-500 px-4 py-2 rounded-lg flex items-center gap-3">
+        <span class="text-amber-400 font-semibold">📊 Filtrando por:</span>
+        <span class="text-slate-100">{{ clienteSelecionado()?.razao || clienteSelecionado()?.fantasia }}</span>
+      </div>
+    }
+  </div>
+
+  <!-- Cards de Métricas -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+    <div class="bg-gradient-to-br from-blue-600 to-blue-800 p-4 rounded-lg shadow-lg">
+      <div class="text-blue-200 text-sm font-medium">Total de Contatos</div>
+      <div class="text-2xl font-bold text-white mt-1">{{ totalContatos() }}</div>
+    </div>
+    <div class="bg-gradient-to-br from-green-600 to-green-800 p-4 rounded-lg shadow-lg">
+      <div class="text-green-200 text-sm font-medium">Próximos Contatos</div>
+      <div class="text-2xl font-bold text-white mt-1">{{ contatosComProximoContato() }}</div>
+    </div>
+    <div class="bg-gradient-to-br from-purple-600 to-purple-800 p-4 rounded-lg shadow-lg">
+      <div class="text-purple-200 text-sm font-medium">Tipos de Contato</div>
+      <div class="text-2xl font-bold text-white mt-1">{{ contatosPorTipoKeys.length }}</div>
+    </div>
+  </div>
+
+  <!-- Formulário -->
+  <form (ngSubmit)="submit()" class="space-y-4 bg-slate-800/60 p-6 rounded-lg shadow-md mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm font-medium text-slate-300 mb-1">Cliente *</label>
+        <app-cliente-autocomplete
+          [clientes]="clientes()"
+          [clienteInicial]="idcliente()"
+          [label]="''"
+          [placeholder]="'Selecione o cliente...'"
+          [inputId]="'clienteContato'"
+          [required]="true"
+          (clienteSelecionado)="onClienteAutocompleteChange($event)"
+        />
+      </div>
+
+      <div>
+        <label for="tipo" class="block text-sm font-medium text-slate-300 mb-1">Tipo de Contato *</label>
+        <select id="tipo" name="tipo" required
+                class="w-full px-3 py-2 border border-slate-600 rounded-md bg-slate-700 text-slate-200"
+                [(ngModel)]="tipo">
+          <option value="Comercial">Comercial</option>
+          <option value="Sucesso">Sucesso</option>
+          <option value="Suporte">Suporte</option>
+          <option value="Financeiro">Financeiro</option>
+          <option value="Outro">Outro</option>
+        </select>
+      </div>
+    </div>
+
+    <div>
+      <label for="assunto" class="block text-sm font-medium text-slate-300 mb-1">Assunto *</label>
+      <input id="assunto" name="assunto" required
+             class="w-full px-3 py-2 border border-slate-600 rounded-md bg-slate-700 text-slate-200"
+             [(ngModel)]="assunto">
+    </div>
+
+    <div>
+      <label for="descricao" class="block text-sm font-medium text-slate-300 mb-1">Descrição *</label>
+      <textarea id="descricao" name="descricao" required rows="4"
+                class="w-full px-3 py-2 border border-slate-600 rounded-md bg-slate-700 text-slate-200"
+                [(ngModel)]="descricao"></textarea>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div>
+        <label for="data" class="block text-sm font-medium text-slate-300 mb-1">Data do Contato *</label>
+        <input id="data" name="data" type="date" required
+               class="w-full px-3 py-2 border border-slate-600 rounded-md bg-slate-700 text-slate-200"
+               [(ngModel)]="dataFormatada">
+      </div>
+
+      <div>
+        <label for="responsavel" class="block text-sm font-medium text-slate-300 mb-1">Responsável</label>
+        <input id="responsavel" name="responsavel"
+               class="w-full px-3 py-2 border border-slate-600 rounded-md bg-slate-700 text-slate-200"
+               [(ngModel)]="responsavel">
+      </div>
+
+      <div>
+        <label for="proximoContato" class="block text-sm font-medium text-slate-300 mb-1">Próximo Contato</label>
+        <input id="proximoContato" name="proximoContato" type="date"
+               class="w-full px-3 py-2 border border-slate-600 rounded-md bg-slate-700 text-slate-200"
+               [(ngModel)]="proximoContatoFormatado">
+      </div>
+    </div>
+
+    <div>
+      <label for="observacoes" class="block text-sm font-medium text-slate-300 mb-1">Observações (opcional)</label>
+      <textarea id="observacoes" name="observacoes"
+                class="w-full px-3 py-2 border border-slate-600 rounded-md h-20 bg-slate-700 text-slate-200"
+                [(ngModel)]="observacoes"></textarea>
+    </div>
+
+    <div class="flex justify-end gap-2">
+      @if (contatoSelecionado()) {
+        <button type="button" (click)="limparFormulario()"
+                class="px-4 py-2 bg-slate-600 text-white rounded-md font-semibold hover:bg-slate-700">
+          Cancelar
+        </button>
+        <button type="submit"
+                class="px-4 py-2 bg-amber-500 text-slate-900 rounded-md font-semibold hover:bg-amber-600">
+          Atualizar Contato
+        </button>
+      } @else {
+        <button type="submit"
+                class="px-4 py-2 bg-green-600 text-white rounded-md font-semibold hover:bg-green-700">
+          Registrar Contato
+        </button>
+      }
+    </div>
+  </form>
+
+  <!-- Lista de Contatos -->
+  <section class="mt-6">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-lg font-semibold text-slate-100">Histórico de Contatos</h2>
+      <input type="text" placeholder="Filtrar por tipo, assunto ou responsável..."
+             class="px-3 py-2 border border-slate-600 rounded-md bg-slate-700 text-slate-200"
+             [ngModel]="filtroTipo()" (ngModelChange)="filtroTipo.set($event)">
+    </div>
+
+    <div class="space-y-3">
+      @for (contato of contatosFiltrados(); track contato.idcontato) {
+        <div class="bg-slate-800/60 p-4 rounded-lg shadow-md border-l-4"
+             [ngClass]="{
+               'border-blue-500': contato.tipo === 'Comercial',
+               'border-green-500': contato.tipo === 'Sucesso',
+               'border-purple-500': contato.tipo === 'Suporte',
+               'border-amber-500': contato.tipo === 'Financeiro',
+               'border-gray-500': contato.tipo === 'Outro'
+             }">
+          <div class="flex justify-between items-start">
+            <div class="flex-1">
+              <div class="flex items-center gap-3 mb-2">
+                <span class="font-bold text-slate-100">{{ contato.assunto }}</span>
+                <span class="px-2 py-1 rounded text-xs font-semibold" [ngClass]="getTipoColor(contato.tipo)">
+                  {{ contato.tipo }}
+                </span>
+              </div>
+              <div class="text-sm text-slate-300 mb-2">
+                Cliente: {{ getClienteNome(contato.idcliente) }}
+                @if (contato.responsavel) {
+                  | Responsável: {{ contato.responsavel }}
+                }
+              </div>
+              <div class="text-slate-200 mb-2">{{ contato.descricao }}</div>
+              <div class="text-xs text-slate-400">
+                Data: {{ contato.data_cadastro | date:'dd/MM/yyyy' }}
+                @if (contato.data_proximo_contato) {
+                  | Próximo contato: {{ contato.data_proximo_contato | date:'dd/MM/yyyy' }}
+                }
+              </div>
+              @if (contato.observacoes) {
+                <div class="text-sm text-slate-400 mt-2 italic">{{ contato.observacoes }}</div>
+              }
+            </div>
+            <div class="flex gap-2">
+              <button (click)="editarContato(contato)"
+                      class="px-3 py-1.5 bg-amber-500 text-white rounded-md text-sm hover:bg-amber-600">
+                Editar
+              </button>
+              <button (click)="excluirContato(contato.idcontato)"
+                      class="px-3 py-1.5 bg-red-500 text-white rounded-md text-sm hover:bg-red-600">
+                Excluir
+              </button>
+            </div>
+          </div>
+        </div>
+      } @empty {
+        <div class="bg-slate-800/60 p-4 rounded-lg shadow-sm text-center text-slate-400">
+          Nenhum contato registrado.
+        </div>
+      }
+    </div>
+  </section>
+</div>
+

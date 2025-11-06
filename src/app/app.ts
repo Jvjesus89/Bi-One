@@ -1,4 +1,4 @@
-import { Component, signal, computed, inject, OnInit } from '@angular/core';
+import { Component, signal, computed, inject, OnInit, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -6,126 +6,127 @@ import { RouterModule } from '@angular/router';
 // Importa o serviço e a interface para que o componente saiba como usá-los
 import { ChamadoService, Chamado } from './services/chamado.service';
 import { ClientesService } from './services/clientes.service';
+import { ClienteSelecionadoService } from './services/selecionado.service';
+import { ClienteAutocompleteComponent } from './cliente-autocomplete';
+
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, ClienteAutocompleteComponent],
   templateUrl: './app.html',
   styleUrls: ['./app.css']
 })
 export class App implements OnInit {
-  // --- SINAIS PARA CONTROLE DA INTERFACE ---
-  chamadoSelecionado = signal<Chamado | null>(null);
+  sidebarOpen = true;
+  clienteBusca = '';
 
-  // solução interna (compatível com [(ngModel)])
-  private solucaoSignal = signal<string>('');
-  public get solucaoAtual(): string { return this.solucaoSignal(); }
-  public set solucaoAtual(v: string) { this.solucaoSignal.set(v); }
-
-  // --- LISTA DE CLIENTES / SELEÇÃO ---
   private clientesService = inject(ClientesService);
-  public clients = this.clientesService.clientes; // use clients() no template
-
-  private selectedClienteSignal = signal<number | null>(null); // guarda idcliente
-  public get selectedCliente(): number | null { return this.selectedClienteSignal(); }
-  public set selectedCliente(v: number | null) { this.selectedClienteSignal.set(v); }
-
-  // --- FILTROS (opcional) ---
-  filtroCliente = signal<string>('');
-  filtroTipo = signal<string>('');
-
-  // --- CONEXÃO COM O SERVIÇO ---
   private chamadoService = inject(ChamadoService);
-  public chamados = this.chamadoService.chamados;
+  public clientes = this.clientesService.clientes;
+  private clienteSel = inject(ClienteSelecionadoService);
+  public clienteSelecionadoSignal = this.clienteSel.clienteSelecionado;
+  
+  // Signal para o ID do cliente selecionado
+  clienteSelecionadoId = signal<number | null>(null);
 
-  // --- SINAIS COMPUTADOS PARA A TELA ---
-  private normaliza = (v: string) => (v || '').toLocaleLowerCase();
-  private clientesById = computed<Record<number, string>>(() => {
-    const map: Record<number, string> = {};
-    const list: any[] = this.clients();
-    (list || []).forEach((c: any) => {
-      if (c && typeof c.idcliente === 'number') {
-        map[c.idcliente] = c.razao || c.fantasia || String(c.idcliente);
+  constructor() {
+    // Effect para reagir às mudanças de cliente selecionado
+    effect(() => {
+      const cliente = this.clienteSelecionadoSignal();
+      console.log('=== APP EFFECT ===');
+      console.log('Cliente do signal:', cliente);
+      
+      if (cliente) {
+        console.log('Cliente selecionado:', cliente.razao || cliente.fantasia);
+        console.log('Setando ID:', cliente.idcliente);
+        this.clienteSelecionadoId.set(cliente.idcliente);
+      } else {
+        console.log('Filtro de cliente removido');
+        this.clienteSelecionadoId.set(null);
       }
+      console.log('clienteSelecionadoId atual:', this.clienteSelecionadoId());
+      console.log('==================');
     });
-    return map;
-  });
-  private aplicaFiltros = (lista: Chamado[]) => {
-    const filtroCliente = this.normaliza(this.filtroCliente());
-    const filtroTipo = this.normaliza(this.filtroTipo());
-    const byId = this.clientesById();
-    return lista.filter(c => {
-      const nomeCliente = byId[c.idcliente] || String(c.idcliente);
-      const clienteOk = !filtroCliente || this.normaliza(nomeCliente).includes(filtroCliente);
-      const tipoOk = !filtroTipo || this.normaliza(c.tipo) === filtroTipo || this.normaliza(c.tipo).includes(filtroTipo);
-      return clienteOk && tipoOk;
-    });
-  };
-  chamadosAbertos = computed(() => this.aplicaFiltros(this.chamados().filter(c => c.status === 'Aberto')));
-  chamadosFechados = computed(() => this.aplicaFiltros(this.chamados().filter(c => c.status === 'Fechado')));
-
-  public getClienteNome(idcliente: number | null | undefined): string {
-    if (!idcliente) return '';
-    const byId = this.clientesById();
-    return byId[idcliente] || String(idcliente);
   }
 
-  // --- CICLO DE VIDA ---
   ngOnInit() {
-    // busca chamados
-    if (this.chamadoService.getChamados) this.chamadoService.getChamados();
-
-    // carrega clientes do serviço dedicado (Supabase se disponível)
+    // Carrega clientes e chamados do serviço se necessário
     const svc: any = this.clientesService;
     if (svc.loadClientesFromSupabase) svc.loadClientesFromSupabase();
+    
+    // Também carrega chamados para garantir que os dados estejam disponíveis
+    if (this.chamadoService.getChamados) this.chamadoService.getChamados();
   }
 
-  // --- MÉTODOS CHAMADOS PELO HTML ---
+  get clienteSelecionado() {
+    return this.clienteSelecionadoSignal();
+  }
 
-  adicionarChamado(event: Event) {
-    event.preventDefault();
-    const form = event.target as HTMLFormElement;
-    const formData = new FormData(form);
-    const titulo = String(formData.get('titulo') ?? '');
-    const descricao = String(formData.get('descricao') ?? '');
-    const idcliente = Number(formData.get('cliente')) || this.selectedCliente || 0;
-    // pega tipo vindo do <select name="tipo">
-    const tipo = String(formData.get('tipo') ?? '');
+  // Método para receber seleção do autocomplete
+  onClienteAutocompleteSelecionado(idCliente: number | null) {
+    console.log('=== AUTOCOMPLETE SIDEBAR CALLBACK ===');
+    console.log('ID recebido do autocomplete:', idCliente);
+    console.log('Lista de clientes disponível:', this.clientes().length);
+    
+    if (idCliente) {
+      const cliente = this.clientes().find(c => c.idcliente === idCliente);
+      if (cliente) {
+        console.log('Cliente encontrado para setar:', cliente.razao);
+        this.clienteSel.set(cliente);
+        console.log('Cliente setado no serviço');
+      } else {
+        console.log('ERRO: Cliente não encontrado com ID:', idCliente);
+      }
+    } else {
+      console.log('Limpando seleção (recebeu null)');
+      this.clienteSel.set(null);
+    }
+    console.log('=====================================');
+  }
 
-    if (!titulo || !descricao || !idcliente) return;
-
-    // Chama o service passando cliente e tipo (compatível com a assinatura atual)
-    if (typeof (this.chamadoService as any).addChamado === 'function') {
+  async buscarCliente() {
+    const termo = this.clienteBusca.trim().toLowerCase();
+    if (!termo) return;
+    
+    console.log('=== BUSCANDO CLIENTE ===');
+    console.log('Termo de busca:', termo);
+    
+    let lista = this.clientes();
+    console.log('Clientes disponíveis:', lista.length);
+    
+    const svc: any = this.clientesService;
+    // se ainda não carregou clientes, tente chamá-los do service
+    if ((!lista || !lista.length) && typeof svc.getClientes === 'function') {
       try {
-        (this.chamadoService as any).addChamado(titulo, descricao, idcliente, tipo);
+        const res = svc.getClientes();
+        if (res && typeof res.then === 'function') await res;
+        lista = this.clientes();
       } catch {
-        // fallback para versões antigas do service
-        (this.chamadoService as any).addChamado(titulo, descricao, idcliente, tipo);
+        // ignore
       }
     }
 
-    form.reset();
-    this.selectedClienteSignal.set(null); // limpa seleção ligada a ngModel
-  }
-
-  finalizarChamado() {
-    const chamado = this.chamadoSelecionado();
-    const solucao = this.solucaoAtual?.trim();
-    if (!chamado || !solucao) return;
-    if (this.chamadoService.finalizarChamado) {
-      this.chamadoService.finalizarChamado(chamado.idchamado, solucao);
+    // Busca por razão, fantasia ou cpcn
+    const encontrado = (lista || []).find((c: any) =>
+      (c.razao && c.razao.toLowerCase().includes(termo)) ||
+      (c.fantasia && c.fantasia.toLowerCase().includes(termo)) ||
+      (c.cpcn && String(c.cpcn).includes(termo))
+    );
+    
+    if (encontrado) {
+      console.log('Cliente encontrado:', encontrado.razao || encontrado.fantasia);
+      this.clienteSel.set(encontrado);
+      this.clienteBusca = '';
+      console.log('Cliente setado no serviço');
+    } else {
+      console.log('Nenhum cliente encontrado com o termo:', termo);
     }
-    this.cancelarFinalizacao();
+    console.log('========================');
   }
 
-  abrirModalSolucao(chamado: Chamado) {
-    this.chamadoSelecionado.set(chamado);
-    this.solucaoSignal.set('');
-  }
-
-  cancelarFinalizacao() {
-    this.chamadoSelecionado.set(null);
+  clearSelection() {
+    console.log('Limpando seleção de cliente');
+    this.clienteSel.set(null);
   }
 }
-

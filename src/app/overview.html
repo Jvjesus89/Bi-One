@@ -1,0 +1,236 @@
+<div class="min-h-screen font-sans text-slate-200">
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-3xl font-bold text-slate-100">Chamados - Dashboard</h1>
+    @if (clienteSelecionado()) {
+      <div class="bg-amber-500/20 border border-amber-500 px-4 py-2 rounded-lg flex items-center gap-3">
+        <span class="text-amber-400 font-semibold">📊 Filtrando por:</span>
+        <span class="text-slate-100">{{ clienteSelecionado().razao || clienteSelecionado().fantasia || clienteSelecionado().nome }}</span>
+      </div>
+    }
+  </div>
+
+  <!-- Cards de Métricas Principais -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+
+    <!-- Total de Chamados -->
+    <div class="bg-gradient-to-br from-blue-600 to-blue-800 p-6 rounded-lg shadow-lg">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-blue-200 text-sm font-medium">Total de Chamados</p>
+          <p class="text-4xl font-bold text-white mt-2">{{ totalChamados() }}</p>
+        </div>
+        <div class="text-5xl opacity-20">📝</div>
+      </div>
+      <div class="mt-4 text-sm text-blue-200">
+        {{ chamadosAbertos() }} em aberto
+      </div>
+    </div>
+
+    <!-- Chamados Finalizados -->
+    <div class="bg-gradient-to-br from-green-600 to-green-800 p-6 rounded-lg shadow-lg">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-green-200 text-sm font-medium">Finalizados</p>
+          <p class="text-4xl font-bold text-white mt-2">{{ chamadosFechados() }}</p>
+        </div>
+        <div class="text-5xl opacity-20">✅</div>
+      </div>
+      <div class="mt-4 text-sm text-green-200">
+        {{ totalChamados() > 0 ? Math.round((chamadosFechados() / totalChamados()) * 100) : 0 }}% concluídos
+      </div>
+    </div>
+
+    <!-- Prazo Médio de Solução -->
+    <div class="bg-gradient-to-br from-amber-500 to-amber-700 p-6 rounded-lg shadow-lg">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-amber-200 text-sm font-medium">Prazo Médio</p>
+          <p class="text-4xl font-bold text-white mt-2">{{ prazoMedioSolucao() }}h</p>
+        </div>
+        <div class="text-5xl opacity-20">⏱️</div>
+      </div>
+      <div class="mt-4 text-sm text-amber-200">
+        Tempo de solução
+      </div>
+    </div>
+
+    <!-- Total de Clientes -->
+    <div class="bg-gradient-to-br from-purple-600 to-purple-800 p-6 rounded-lg shadow-lg">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-purple-200 text-sm font-medium">Total de Clientes</p>
+          <p class="text-4xl font-bold text-white mt-2">{{ totalClientes() }}</p>
+        </div>
+        <div class="text-5xl opacity-20">👥</div>
+      </div>
+      <div class="mt-4 text-sm text-purple-200">
+        Cadastrados
+      </div>
+    </div>
+  </div>
+
+  <!-- Cards de Financeiro e Contato -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+
+    <!-- Saldo Financeiro -->
+    <a routerLink="/financeiro" class="bg-gradient-to-br from-green-600 to-green-800 p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow cursor-pointer">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-green-200 text-sm font-medium">Saldo Financeiro</p>
+          <p class="text-3xl font-bold text-white mt-2" [class.text-green-300]="saldoFinanceiro() >= 0" [class.text-red-300]="saldoFinanceiro() < 0">
+            {{ formatarMoeda(saldoFinanceiro()) }}
+          </p>
+        </div>
+        <div class="text-5xl opacity-20">💰</div>
+      </div>
+      <div class="mt-4 text-sm text-green-200">
+        Receita: {{ formatarMoeda(totalReceita()) }}
+      </div>
+    </a>
+
+    <!-- Total Receita -->
+    <div class="bg-gradient-to-br from-blue-600 to-blue-800 p-6 rounded-lg shadow-lg">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-blue-200 text-sm font-medium">Total Receita</p>
+          <p class="text-3xl font-bold text-white mt-2">{{ formatarMoeda(totalReceita()) }}</p>
+        </div>
+        <div class="text-5xl opacity-20">📈</div>
+      </div>
+      <div class="mt-4 text-sm text-blue-200">
+        Lançamentos pagos
+      </div>
+    </div>
+
+    <!-- Total Contatos -->
+    <a routerLink="/contato-cliente" class="bg-gradient-to-br from-indigo-600 to-indigo-800 p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow cursor-pointer">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-indigo-200 text-sm font-medium">Total Contatos</p>
+          <p class="text-4xl font-bold text-white mt-2">{{ totalContatos() }}</p>
+        </div>
+        <div class="text-5xl opacity-20">📞</div>
+      </div>
+      <div class="mt-4 text-sm text-indigo-200">
+        {{ contatosComProximoContato() }} próximos contatos
+      </div>
+    </a>
+
+    <!-- Próximos Contatos -->
+    <div class="bg-gradient-to-br from-pink-600 to-pink-800 p-6 rounded-lg shadow-lg">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-pink-200 text-sm font-medium">Próximos Contatos</p>
+          <p class="text-4xl font-bold text-white mt-2">{{ contatosComProximoContato() }}</p>
+        </div>
+        <div class="text-5xl opacity-20">📅</div>
+      </div>
+      <div class="mt-4 text-sm text-pink-200">
+        Agendados
+      </div>
+    </div>
+  </div>
+
+  <!-- Gráficos -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+
+    <!-- Gráfico de Chamados por Tipo -->
+    <div class="bg-slate-800/60 p-6 rounded-lg shadow-md">
+      <h2 class="text-xl font-semibold mb-4 text-slate-100">Chamados por Tipo</h2>
+
+      @if (percentualTipos().length > 0) {
+        <div class="space-y-4">
+          @for (item of percentualTipos(); track item.tipo) {
+            <div>
+              <div class="flex justify-between items-center mb-2">
+                <span class="text-sm font-medium text-slate-300">{{ item.tipo }}</span>
+                <span class="text-sm text-slate-400">{{ item.count }} ({{ item.percent }}%)</span>
+              </div>
+              <div class="w-full bg-slate-700 rounded-full h-3 overflow-hidden">
+                <div
+                  class="h-full rounded-full transition-all duration-500"
+                  [style.width.%]="item.percent"
+                  [ngClass]="{
+                    'bg-blue-500': item.tipo === 'Dúvida',
+                    'bg-red-500': item.tipo === 'Erro de Sistema',
+                    'bg-green-500': item.tipo === 'Solicitação de Melhoria'
+                  }">
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="text-center text-slate-400 py-8">
+          Nenhum chamado registrado
+        </div>
+      }
+    </div>
+
+    <!-- Gráfico de Linha - Últimos 7 Dias -->
+    <div class="bg-slate-800/60 p-6 rounded-lg shadow-md">
+      <h2 class="text-xl font-semibold mb-4 text-slate-100">Chamados - Últimos 7 Dias</h2>
+
+      <div class="h-64 flex items-end justify-between gap-2">
+        @for (dia of chamadosUltimos7Dias(); track dia.data) {
+          <div class="flex-1 flex flex-col items-center">
+            <div class="w-full flex gap-1 items-end justify-center h-48">
+              <!-- Barra de Abertos -->
+              <div class="flex-1 bg-amber-500 rounded-t transition-all duration-500 hover:bg-amber-400 relative group"
+                   [style.height.%]="calcularAlturaBarra(dia.abertos)">
+                <div class="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                  {{ dia.abertos }} abertos
+                </div>
+              </div>
+              <!-- Barra de Fechados -->
+              <div class="flex-1 bg-green-500 rounded-t transition-all duration-500 hover:bg-green-400 relative group"
+                   [style.height.%]="calcularAlturaBarra(dia.fechados)">
+                <div class="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                  {{ dia.fechados }} fechados
+                </div>
+              </div>
+            </div>
+            <span class="text-xs text-slate-400 mt-2">{{ dia.data }}</span>
+          </div>
+        }
+      </div>
+
+      <!-- Legenda -->
+      <div class="flex justify-center gap-6 mt-6">
+        <div class="flex items-center gap-2">
+          <div class="w-4 h-4 bg-amber-500 rounded"></div>
+          <span class="text-sm text-slate-300">Abertos</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <div class="w-4 h-4 bg-green-500 rounded"></div>
+          <span class="text-sm text-slate-300">Fechados</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Resumo Rápido -->
+  <div class="bg-slate-800/60 p-6 rounded-lg shadow-md">
+    <h2 class="text-xl font-semibold mb-4 text-slate-100">Resumo Rápido</h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+      <div class="text-center">
+        <div class="text-4xl mb-2">⚡</div>
+        <div class="text-2xl font-bold text-amber-400">{{ chamadosAbertos() }}</div>
+        <div class="text-sm text-slate-400">Aguardando Solução</div>
+      </div>
+
+      <div class="text-center">
+        <div class="text-4xl mb-2">📊</div>
+        <div class="text-2xl font-bold text-blue-400">{{ totalChamados() }}</div>
+        <div class="text-sm text-slate-400">Total Registrado</div>
+      </div>
+
+      <div class="text-center">
+        <div class="text-4xl mb-2">⏰</div>
+        <div class="text-2xl font-bold text-green-400">{{ prazoMedioSolucao() }}h</div>
+        <div class="text-sm text-slate-400">Tempo Médio</div>
+      </div>
+    </div>
+  </div>
+</div>
