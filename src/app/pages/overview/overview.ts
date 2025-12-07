@@ -1,10 +1,10 @@
 import { Component, computed, inject, OnInit, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ChamadoService } from './services/chamado.service';
-import { ClientesService } from './services/clientes.service';
-import { ClienteSelecionadoService } from './services/selecionado.service';
-import { FinanceiroService } from './services/financeiro.service';
-import { ContatoClienteService } from './services/contato-cliente.service';
+import { ChamadoService } from '../../services/chamado.service';
+import { ClientesService } from '../../services/clientes.service';
+import { ClienteSelecionadoService } from '../../services/selecionado.service';
+import { FinanceiroService } from '../../services/financeiro.service';
+import { ContatoClienteService } from '../../services/contato-cliente.service';
 import { RouterModule } from '@angular/router';
 
 @Component({

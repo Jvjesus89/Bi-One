@@ -2,10 +2,10 @@ import { Component, signal, inject, computed, effect, OnInit } from '@angular/co
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { ContatoClienteService, ContatoCliente } from './services/contato-cliente.service';
-import { ClientesService } from './services/clientes.service';
-import { ClienteSelecionadoService } from './services/selecionado.service';
-import { ClienteAutocompleteComponent } from './cliente-autocomplete';
+import { ContatoClienteService, ContatoCliente } from '../../services/contato-cliente.service';
+import { ClientesService } from '../../services/clientes.service';
+import { ClienteSelecionadoService } from '../../services/selecionado.service';
+import { ClienteAutocompleteComponent } from '../../cliente-autocomplete';
 
 @Component({
   selector: 'app-contato-cliente',

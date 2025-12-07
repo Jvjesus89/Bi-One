@@ -2,10 +2,10 @@ import { Component, signal, inject, computed, effect, OnInit } from '@angular/co
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { FinanceiroService, Financeiro } from './services/financeiro.service';
-import { ClientesService } from './services/clientes.service';
-import { ClienteSelecionadoService } from './services/selecionado.service';
-import { ClienteAutocompleteComponent } from './cliente-autocomplete';
+import { FinanceiroService, Financeiro } from '../../services/financeiro.service';
+import { ClientesService } from '../../services/clientes.service';
+import { ClienteSelecionadoService } from '../../services/selecionado.service';
+import { ClienteAutocompleteComponent } from '../../cliente-autocomplete';
 
 @Component({
   selector: 'app-financeiro',

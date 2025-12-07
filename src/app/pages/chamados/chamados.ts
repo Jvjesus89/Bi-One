@@ -4,10 +4,10 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 
 // Importa o serviço e a interface para que o componente saiba como usá-los
-import { ChamadoService, Chamado } from './services/chamado.service';
-import { ClientesService } from './services/clientes.service';
-import { ClienteSelecionadoService } from './services/selecionado.service';
-import { ClienteAutocompleteComponent } from './cliente-autocomplete';
+import { ChamadoService, Chamado } from '../../services/chamado.service';
+import { ClientesService } from '../../services/clientes.service';
+import { ClienteSelecionadoService } from '../../services/selecionado.service';
+import { ClienteAutocompleteComponent } from '../../cliente-autocomplete';
 
 @Component({
   selector: 'app-chamados',

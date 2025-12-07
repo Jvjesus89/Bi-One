@@ -1,9 +1,9 @@
 import { Routes } from '@angular/router';
-import { ClientesComponent } from './clientes';
-import { ChamadosComponent } from './chamados';
-import { OverviewComponent } from './overview';
-import { FinanceiroComponent } from './financeiro';
-import { ContatoClienteComponent } from './contato-cliente';
+import { ClientesComponent } from './pages/clientes/clientes';
+import { ChamadosComponent } from './pages/chamados/chamados';
+import { OverviewComponent } from './pages/overview/overview';
+import { FinanceiroComponent } from './pages/financeiro/financeiro';
+import { ContatoClienteComponent } from './pages/contato-cliente/contato-cliente';
 
 export const routes: Routes = [
     { path: '', component: OverviewComponent },

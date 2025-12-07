@@ -2,8 +2,8 @@ import { Component, signal, inject, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { ClientesService } from './services/clientes.service';
-import { ClienteSelecionadoService } from './services/selecionado.service';
+import { ClientesService } from '../../services/clientes.service';
+import { ClienteSelecionadoService } from '../../services/selecionado.service';
 import { Router } from '@angular/router';
 
 @Component({
